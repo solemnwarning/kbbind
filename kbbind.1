@@ -1,0 +1,39 @@
+.TH KBBIND 1 2010-12-13 "" "User Commands"
+
+.SH NAME
+kbbind \- Remap keys and run commands
+
+.SH SYNOPSIS
+.B kbbind
+[\-sdv] [\-p <file>] [\-u <path>] [\-n <name>] \-e|<config file> <input device>
+
+.SH DESCRIPTION
+Utility for mapping keys/combinations to other keys/combinations/commands. Events are read from a single keyboard via an event device and any mapped keys are passed back to the kernel through a virtual input (uinput) device.
+
+.SH OPTIONS
+.TP
+.B\-s
+Sink mode - Trap all events and only forward mapped ones
+.TP
+.B\-d
+Detach from console and run as a daemon, send messages to syslog
+.TP
+.B\-v
+Print version number and exit
+.TP
+.B\-p
+Write PID to file and delete on exit
+.TP
+.B\-u
+Override default uinput device path (
+.I /dev/input/uinput
+)
+.TP
+.B\-n
+Override default uinput device name (kbbind virtual keyboard)
+.TP
+.B\-e
+Print key presses to stdout and do nothing else
+
+.SH AUTHOR
+Daniel Collins <solemnwarning@solemnwarning.net>
