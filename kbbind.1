@@ -1,39 +1,56 @@
-.TH KBBIND 1 2010-12-13 "" "User Commands"
+.TH KBBIND 1 2010-12-24 "" "User Commands"
 
 .SH NAME
 kbbind \- Remap keys and run commands
 
 .SH SYNOPSIS
 .B kbbind
-[\-sdv] [\-p <file>] [\-u <path>] [\-n <name>] \-e|<config file> <input device>
+[\fB\-sdv\fR] [\fB\-p \fIfile\fR] [\fB\-u \fIpath\fR] [\fB\-n \fIname\fR] \fB\-e\fR|<\fIconfig file\fR> <\fIinput device\fR>
 
 .SH DESCRIPTION
 Utility for mapping keys/combinations to other keys/combinations/commands. Events are read from a single keyboard via an event device and any mapped keys are passed back to the kernel through a virtual input (uinput) device.
 
 .SH OPTIONS
 .TP
-.B\-s
+\fB\-s\fR
 Sink mode - Trap all events and only forward mapped ones
 .TP
-.B\-d
+\fB\-d\fR
 Detach from console and run as a daemon, send messages to syslog
 .TP
-.B\-v
+\fB\-v\fR
 Print version number and exit
 .TP
-.B\-p
+\fB\-p \fIfile\fR
 Write PID to file and delete on exit
 .TP
-.B\-u
-Override default uinput device path (
-.I /dev/input/uinput
-)
+\fB\-u \fIpath\fR
+Override default uinput device path (\fI/dev/input/uinput\fR)
 .TP
-.B\-n
+\fB\-n \fIname\fR
 Override default uinput device name (kbbind virtual keyboard)
 .TP
-.B\-e
-Print key presses to stdout and do nothing else
+\fB\-e\fR
+Read events from device and print key events to stdout.
+
+.SH CONFIGURATION
+The key mappings and bindings are loaded from a configuration file which has one directive per line, arguments seperated by spaces/tabs, lines starting with a hash (#) character are comments. The following directives may be used:
+.TP
+\fBmap \fR<\fIkey a\fR> <\fIkey b\fR>
+Map key a to b. For example 'map 75 125+103' maps key 75 to combination 125+103.
+.TP
+\fBdrop \fR<\fIkey\fR>
+Drop events recieved for the given key. If a combination is supplied, the individual keys will not be ignored, only the inputs from the last key in the combination while the rest are held down. Using this while sink mode (-s) is in use is redundant as all unmapped keys will be ignored by default.
+.TP
+\fBexec \fR<\fIkey\fR> <\fIcommand\fR>
+Execute a shell command when the given key is pressed or autorepeats. The terminal will be \fI/dev/null\fR when kbbind is running as a daemon.
+.TP
+A single key or a combination using the foo+bar+... syntax may be used with all directives.
+
+.SH ENVIRONMENT
+.TP
+\fBSHELL\fR
+Set the shell used to execute commands, \fI/bin/sh\fR will be used if this is not set.
 
 .SH AUTHOR
 Daniel Collins <solemnwarning@solemnwarning.net>
