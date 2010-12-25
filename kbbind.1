@@ -34,18 +34,33 @@ Override default uinput device name (kbbind virtual keyboard)
 Read events from device and print key events to stdout.
 
 .SH CONFIGURATION
-The key mappings and bindings are loaded from a configuration file which has one directive per line, arguments seperated by spaces/tabs, lines starting with a hash (#) character are comments. The following directives may be used:
+The configuration file allows one directive per line with arguments seperated by spaces/tabs, lines starting with a hash (#) character are ignored. Single keys or combinations using the \fIx\fR+\fIy\fR+\fIz\fR syntax may be used with all directives. The following directives may be used:
 .TP
 \fBmap \fR<\fIkey a\fR> <\fIkey b\fR>
-Map key a to b. For example 'map 75 125+103' maps key 75 to combination 125+103.
+Map key \fIa\fR to \fIb\fR. For example 'map 75 125+103' maps key 75 to combination 125+103.
 .TP
 \fBdrop \fR<\fIkey\fR>
 Drop events recieved for the given key. If a combination is supplied, the individual keys will not be ignored, only the inputs from the last key in the combination while the rest are held down. Using this while sink mode (-s) is in use is redundant as all unmapped keys will be ignored by default.
 .TP
 \fBexec \fR<\fIkey\fR> <\fIcommand\fR>
-Execute a shell command when the given key is pressed or autorepeats. The terminal will be \fI/dev/null\fR when kbbind is running as a daemon.
+Execute a shell command when the given key is pressed or autorepeats. The terminal will be redirected to \fI/dev/null\fR when kbbind is running as a daemon.
 .TP
-A single key or a combination using the foo+bar+... syntax may be used with all directives.
+\fBalias \fR<\fIname\fR> <\fIkey\fR>
+Set an alias to the specified key, any existing alias will be replaced. The alias may refer to a combination and may be used anywhere, for example, the following \fBmap\fR statements are effectively the same:
+.PP
+.RS
+.RS
+alias win 125
+.br
+alias win_up win+103
+.PP
+map 75 125+103
+.br
+map 75 win+103
+.br
+map 75 win_up
+.RE
+.RE
 
 .SH ENVIRONMENT
 .TP
