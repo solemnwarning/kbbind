@@ -27,14 +27,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-VERSION := 1.0
+VERSION := 1.1
 
 CXX := g++
 CXXFLAGS := -Wall -DVERSION=$(VERSION)
 INCLUDES :=
 LIBS :=
 INSTALL := install
+GZIP := gzip
+
 PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+MANDIR ?= $(PREFIX)/share/man
 
 all: kbbind
 
@@ -42,10 +46,14 @@ clean:
 	rm -f kbbind *.o
 
 install: all
-	$(INSTALL) -m 0755 kbbind $(PREFIX)/bin/
+	$(INSTALL) -D -m 0755 kbbind $(BINDIR)
+	
+	$(GZIP) -c kbbind.1 > kbbind.1.gz
+	$(INSTALL) -D -m 0644 kbbind.1.gz $(MANDIR)/man1/
 
 uninstall:
-	rm -f $(PREFIX)/bin/kbbind
+	rm -f $(BINDIR)/bin/kbbind
+	rm -f $(MANDIR)/man1/kbbind.1.gz
 
 kbbind: kbbind.o
 	$(CXX) $(CXXFLAGS) -o kbbind kbbind.o $(LIBS)

@@ -1,0 +1,13 @@
+Version 1.1:
+	Added kbbind(1) manpage.
+	
+	Bugfix: Do not allow "map" with a single argument.
+	
+	Bugfix: Handle "drop" directive.
+	
+	Added key alias support.
+	
+	Bugfix: Exit on SIGTERM without waiting for an event.
+
+Version 1.0:
+	Initial Release
