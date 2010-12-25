@@ -88,8 +88,6 @@ static key_list pressed_keys;
 static bool running = true;
 
 static void sighandler(int signum) {
-	signal(signum, &sighandler);
-	
 	if(signum == SIGCHLD) {
 		waitpid(-1, NULL, WNOHANG);
 	}else{
@@ -189,8 +187,14 @@ int main(int argc, char **argv) {
 		load_config(argv[optind]);
 	}
 	
-	signal(SIGCHLD, &sighandler);
-	signal(SIGTERM, &sighandler);
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
+	
+	sa.sa_handler = &sighandler;
+	sa.sa_flags = SA_NODEFER;
+	
+	sigaction(SIGCHLD, &sa, NULL);
+	sigaction(SIGTERM, &sa, NULL);
 	
 	if((input_fd = open(device.c_str(), O_RDONLY)) == -1) {
 		die(S("Error opening input device: ") + strerror(errno));
@@ -502,7 +506,13 @@ static input_event read_event() {
 	int r = read(input_fd, &event, sizeof(event));
 	if(r != sizeof(event)) {
 		if(r == -1 && errno == EINTR) {
-			return read_event();
+			/* Return an invalid EV_REL event when interrupted by
+			 * a signal, causing the main loop to repeat and finish
+			 * if 'running' has been set to false by a signal.
+			*/
+			
+			event.type = EV_REL;
+			return event;
 		}
 		
 		die(S("Error reading from input device: ") + strerror(errno));
