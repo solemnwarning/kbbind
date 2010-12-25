@@ -5,7 +5,7 @@ kbbind \- Remap keys and run commands
 
 .SH SYNOPSIS
 .B kbbind
-[\fB\-sdv\fR] [\fB\-p \fIfile\fR] [\fB\-u \fIpath\fR] [\fB\-n \fIname\fR] \fB\-e\fR|<\fIconfig file\fR> <\fIinput device\fR>
+[\fB\-sdv\fR] [\fB\-p \fR\fIfile\fR] [\fB\-u \fR\fIpath\fR] [\fB\-n \fR\fIname\fR] \fB\-e\fR|<\fIconfig file\fR> <\fIinput device\fR>
 
 .SH DESCRIPTION
 Utility for mapping keys/combinations to other keys/combinations/commands. Events are read from a single keyboard via an event device and any mapped keys are passed back to the kernel through a virtual input (uinput) device.
@@ -21,13 +21,13 @@ Detach from console and run as a daemon, send messages to syslog
 \fB\-v\fR
 Print version number and exit
 .TP
-\fB\-p \fIfile\fR
+\fB\-p \fR\fIfile\fR
 Write PID to file and delete on exit
 .TP
-\fB\-u \fIpath\fR
+\fB\-u \fR\fIpath\fR
 Override default uinput device path (\fI/dev/input/uinput\fR)
 .TP
-\fB\-n \fIname\fR
+\fB\-n \fR\fIname\fR
 Override default uinput device name (kbbind virtual keyboard)
 .TP
 \fB\-e\fR
