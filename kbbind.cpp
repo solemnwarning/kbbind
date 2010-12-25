@@ -339,11 +339,24 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
+#define CONF_ERROR(s) \
+	error(filename + ":" + to_string(lnum) + ": " + s); \
+	cerror = true; \
+	continue;
+
 #define REQ_ARG(x) \
 	if(!(x)) { \
-		error(filename + ":" + to_string(lnum) + ": Missing argument(s)"); \
+		CONF_ERROR("Missing argument(s)"); \
+	}
+
+#define LAST_ARG(s) \
+	if((s)[strcspn(s, "\t ")] != '\0') { \
+		CONF_ERROR("Too many arguments"); \
+	}
+
+#define KL_CHECK(k) \
+	if((k).empty()) { \
 		cerror = true; \
-		\
 		continue; \
 	}
 
@@ -371,48 +384,57 @@ static void load_config(const std::string &filename) {
 		
 		if(streq(name, "map")) {
 			REQ_ARG(*(v2 = next_arg(value)));
+			LAST_ARG(v2);
 			
 			key_list match = parse_keys(value, filename, lnum);
 			key_list out = parse_keys(v2, filename, lnum);
 			
+			KL_CHECK(match);
+			KL_CHECK(out);
+			
 			std::pair<key_map::iterator,bool> i = key_mappings.insert(std::make_pair(match, out));
 			
 			if(!i.second) {
-				error(filename + ":" + to_string(lnum) + ": Conflicting map/drop directives for key(s)");
-				cerror = true;
+				CONF_ERROR("Conflicting map/drop directives for key(s)");
 			}
 		}else if(streq(name, "exec")) {
 			REQ_ARG(*(v2 = next_arg(value)));
 			
 			key_list match = parse_keys(value, filename, lnum);
+			KL_CHECK(match);
 			
 			std::pair<exec_map::iterator,bool> i = exec_mappings.insert(std::make_pair(match, v2));
 			
 			if(!i.second) {
-				error(filename + ":" + to_string(lnum) + ": Conflicting exec directives for key(s)");
-				cerror = true;
+				CONF_ERROR("Conflicting exec directives for key(s)");
 			}
 		}else if(streq(name, "drop")) {
 			REQ_ARG(*value);
+			LAST_ARG(value);
 			
 			key_list match = parse_keys(value, filename, lnum);
+			KL_CHECK(match);
 			
 			std::pair<key_map::iterator,bool> i = key_mappings.insert(std::make_pair(match, key_list()));
 			
 			if(!i.second) {
-				error(filename + ":" + to_string(lnum) + ": Conflicting map/drop directives for key(s)");
-				cerror = true;
+				CONF_ERROR("Conflicting map/drop directives for key(s)");
 			}
 		}else if(streq(name, "alias")) {
 			REQ_ARG(*(v2 = next_arg(value)));
+			LAST_ARG(v2);
+			
+			if(strchr(value, '+')) {
+				CONF_ERROR("Alias names cannot contain '+'");
+			}
 			
 			key_list keys = parse_keys(v2, filename, lnum);
+			KL_CHECK(keys);
 			
 			key_aliases.erase(value);
 			key_aliases.insert(std::make_pair(value, keys));
 		}else{
-			error(filename + ":" + to_string(lnum) + ": Unknown directive '" + name + "'");
-			cerror = true;
+			CONF_ERROR("Unknown directive '" + name + "'");
 		}
 	}
 	
@@ -441,6 +463,8 @@ static char *next_arg(char *s) {
 static key_list parse_keys(const char *keys, const std::string &filename, unsigned int lnum) {
 	key_list r;
 	
+	const char *f_keys = keys;
+	
 	while(*keys) {
 		std::string key(keys, strcspn(keys, "+"));
 		alias_map::iterator alias = key_aliases.find(key);
@@ -452,7 +476,8 @@ static key_list parse_keys(const char *keys, const std::string &filename, unsign
 			r.push_back(strtoul(keys, &endptr, 10));
 			
 			if(*endptr && *endptr != '+') {
-				die(filename + ":" + to_string(lnum) + ": Syntax error in key list");
+				error(filename + ":" + to_string(lnum) + ": Invalid key specified (" + f_keys + ")");
+				return key_list();
 			}
 		}
 		
