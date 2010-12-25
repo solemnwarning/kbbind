@@ -28,6 +28,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 VERSION := 1.1
+DISTFILES := CHANGES COPYING example.conf kbbind.1 kbbind.cpp Makefile
 
 CXX := g++
 CXXFLAGS := -Wall -DVERSION=$(VERSION)
@@ -54,6 +55,12 @@ install: all
 uninstall:
 	rm -f $(BINDIR)/bin/kbbind
 	rm -f $(MANDIR)/man1/kbbind.1.gz
+
+dist: all
+	mkdir -p kbbind-$(VERSION)
+	cp -a $(DISTFILES) kbbind-$(VERSION)/
+	rman -f HTML kbbind.1 > kbbind-$(VERSION)/kbbind.html
+	tar -czf kbbind-$(VERSION).tar.gz kbbind-$(VERSION)/
 
 kbbind: kbbind.o
 	$(CXX) $(CXXFLAGS) -o kbbind kbbind.o $(LIBS)
