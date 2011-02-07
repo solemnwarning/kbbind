@@ -73,6 +73,7 @@ static input_event read_event();
 static void die(const std::string &err);
 static void error(const std::string &err);
 static void exec_command(const std::string &command);
+static void uinput_write_event(const input_event &event);
 
 static bool sink_mode = false;
 static key_map key_mappings;
@@ -81,6 +82,7 @@ static alias_map key_aliases;
 static std::string uinput_path = "/dev/input/uinput";
 static std::string uinput_name = "kbbind virtual keyboard";
 static bool fork_daemon = false;
+static bool force_sync = true;
 
 static int input_fd = -1;
 static int uinput_fd = -1;
@@ -101,11 +103,11 @@ int main(int argc, char **argv) {
 	bool dump_mode = false;
 	std::string pidfile;
 	
-	while((opt = getopt(argc, argv, "shu:edp:vn:")) != -1) {
+	while((opt = getopt(argc, argv, "shu:edp:vn:r")) != -1) {
 		if(opt == 's') {
 			sink_mode = true;
 		}else if(opt == 'h') {
-			std::cout << "Usage: " << argv[0] << " [-sdv] [-p <file>] [-u <path>] [-n <name>] -e|<config file> <input device>" << std::endl << std::endl;
+			std::cout << "Usage: " << argv[0] << " [-sdvr] [-p <file>] [-u <path>] [-n <name>] -e|<config file> <input device>" << std::endl << std::endl;
 			std::cout << "-s\tSink mode - Trap all events and only forward mapped ones" << std::endl;
 			std::cout << "-d\tDetach from console and run as a daemon, send messages to syslog" << std::endl;
 			std::cout << "-v\tPrint version number and exit" << std::endl;
@@ -113,6 +115,7 @@ int main(int argc, char **argv) {
 			std::cout << "-u\tOverride default uinput device path (/dev/input/uinput)" << std::endl;
 			std::cout << "-n\tOverride default uinput device name (kbbind virtual keyboard)" << std::endl;
 			std::cout << "-e\tPrint key presses to stdout and do nothing else" << std::endl;
+			std::cout << "-r\tDon't append SYN_REPORT to every uinput event" << std::endl;
 			
 			return 0;
 		}else if(opt == 'u') {
@@ -128,6 +131,8 @@ int main(int argc, char **argv) {
 			return 0;
 		}else if(opt == 'n') {
 			uinput_name = optarg;
+		}else if(opt == 'r') {
+			force_sync = false;
 		}else if(opt == '?') {
 			std::cerr << "Run '" << argv[0] << " -h' for help" << std::endl;
 			return 1;
@@ -248,7 +253,7 @@ int main(int argc, char **argv) {
 					input_event event2 = event;
 					event2.code = *k2;
 					
-					uinput_write((char*)&event2, sizeof(event2));
+					uinput_write_event(event2);
 				}
 			}
 			
@@ -283,7 +288,7 @@ int main(int argc, char **argv) {
 				input_event event2 = event;
 				event2.code = *(k->second.begin());
 				
-				uinput_write((char*)&event2, sizeof(event2));
+				uinput_write_event(event2);
 			}else if(event.value == 0) {
 				/* Release */
 				
@@ -291,7 +296,7 @@ int main(int argc, char **argv) {
 					input_event event2 = event;
 					event2.code = *k2;
 					
-					uinput_write((char*)&event2, sizeof(event2));
+					uinput_write_event(event2);
 				}
 			}else if(event.value == 1) {
 				/* Press */
@@ -300,7 +305,7 @@ int main(int argc, char **argv) {
 					input_event event2 = event;
 					event2.code = *k2;
 					
-					uinput_write((char*)&event2, sizeof(event2));
+					uinput_write_event(event2);
 				}
 			}else if(event.value == 2) {
 				/* Autorepeat */
@@ -308,10 +313,10 @@ int main(int argc, char **argv) {
 				input_event event2 = event;
 				event2.code = *(k->second.rbegin());
 				
-				uinput_write((char*)&event2, sizeof(event2));
+				uinput_write_event(event2);
 			}
 		}else if(!key_mappings.empty() && !sink_mode) {
-			uinput_write((char*)&event, sizeof(event));
+			uinput_write_event(event);
 		}
 		
 		if(event.value == 0) {
@@ -573,5 +578,19 @@ static void exec_command(const std::string &command) {
 		
 		error(S("Error executing shell: ") + strerror(errno));
 		exit(1);
+	}
+}
+
+static void uinput_write_event(const input_event &event) {
+	uinput_write((char*)&event, sizeof(event));
+	
+	if(force_sync) {
+		input_event sync_event;
+		memset(&sync_event, 0, sizeof(sync_event));
+		
+		sync_event.type = EV_SYN;
+		sync_event.code = SYN_REPORT;
+		
+		uinput_write((char*)&sync_event, sizeof(sync_event));
 	}
 }
