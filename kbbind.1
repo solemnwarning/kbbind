@@ -5,7 +5,7 @@ kbbind \- Remap keys and run commands
 
 .SH SYNOPSIS
 .B kbbind
-[\fB\-sdv\fR] [\fB\-p \fR\fIfile\fR] [\fB\-u \fR\fIpath\fR] [\fB\-n \fR\fIname\fR] \fB\-e\fR|<\fIconfig file\fR> <\fIinput device\fR>
+[\fB\-sdvr\fR] [\fB\-p \fR\fIfile\fR] [\fB\-u \fR\fIpath\fR] [\fB\-n \fR\fIname\fR] \fB\-e\fR|<\fIconfig file\fR> <\fIinput device\fR>
 
 .SH DESCRIPTION
 Utility for mapping keys/combinations to other keys/combinations/commands. Events are read from a single keyboard via an event device and any mapped keys are passed back to the kernel through a virtual input (uinput) device.
@@ -32,6 +32,9 @@ Override default uinput device name (kbbind virtual keyboard)
 .TP
 \fB\-e\fR
 Read events from device and print key events to stdout.
+.TP
+\fB\-r\fR
+Don't send an EV_SYN/SYN_REPORT event after every other uinput event.
 
 .SH CONFIGURATION
 The configuration file allows one directive per line with arguments seperated by spaces/tabs, lines starting with a hash (#) character are ignored. Single keys or combinations using the \fIx\fR+\fIy\fR+\fIz\fR syntax may be used with all directives. The following directives may be used:
