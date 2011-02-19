@@ -1,3 +1,6 @@
+Version 1.11:
+	Send EV_SYN/SYN_REPORT after every uinput event to force certain things (i.e new X versions) to acknowledge the event before the device is destroyed. Running kbbind with -r disables this.
+
 Version 1.1:
 	Added kbbind(1) manpage.
 	
