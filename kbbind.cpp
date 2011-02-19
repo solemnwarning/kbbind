@@ -1,5 +1,5 @@
 /* kbbind - Utility for remapping Linux keyboard inputs
- * Copyright (C) 2010 Daniel Collins <solemnwarning@solemnwarning.net>
+ * Copyright (C) 2010,2011 Daniel Collins <solemnwarning@solemnwarning.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

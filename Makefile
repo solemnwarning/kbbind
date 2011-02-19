@@ -1,5 +1,5 @@
 # kbbind - Utility for remapping Linux keyboard inputs
-# Copyright (C) 2010 Daniel Collins <solemnwarning@solemnwarning.net>
+# Copyright (C) 2010,2011 Daniel Collins <solemnwarning@solemnwarning.net>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ uninstall:
 	rm -f $(BINDIR)/bin/kbbind
 	rm -f $(MANDIR)/man1/kbbind.1.gz
 
-dist: all
+dist:
 	mkdir -p kbbind-$(VERSION)
 	cp -a $(DISTFILES) kbbind-$(VERSION)/
 	rman -f HTML kbbind.1 > kbbind-$(VERSION)/kbbind.html
